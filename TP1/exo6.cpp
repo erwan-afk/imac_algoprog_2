@@ -20,22 +20,45 @@ struct DynaTableau{
 
 void initialise(Liste* liste)
 {
-
+    liste->premier = nullptr;
 }
 
 bool est_vide(const Liste* liste)
 {
-    return false;
+    if (liste->premier != nullptr)
+    {
+        return false;
+    }
+    return true;
+    
 }
 
 void ajoute(Liste* liste, int valeur)
 {
-
+    if (est_vide(liste))
+    {
+        liste->premier = new Noeud();
+        liste->premier->donnee = valeur;
+        liste->premier->suivant= nullptr;
+    }else {
+    
+        liste->premier->suivant= new Noeud();
+        liste->premier->suivant->donnee = valeur;
+        liste->premier->suivant->suivant = nullptr;
+    }
+    
+    
 }
 
 void affiche(const Liste* liste)
 {
-
+    cout << liste->premier->donnee << endl;
+    Liste *iter = nullptr;
+    while (iter != nullptr)
+    {
+        
+    }
+    
 }
 
 int recupere(const Liste* liste, int n)
@@ -61,17 +84,22 @@ void ajoute(DynaTableau* tableau, int valeur)
 
 void initialise(DynaTableau* tableau, int capacite)
 {
-
+    tableau[capacite];
 }
 
 bool est_vide(const DynaTableau* liste)
 {
-    return false;
+    if (liste->donnees != nullptr)
+    {
+        return false;
+    }
+    return true;
 }
 
 void affiche(const DynaTableau* tableau)
 {
-
+    
+    cout << tableau->donnees << endl;
 }
 
 int recupere(const DynaTableau* tableau, int n)
