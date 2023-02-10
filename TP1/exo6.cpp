@@ -53,10 +53,11 @@ void ajoute(Liste* liste, int valeur)
 void affiche(const Liste* liste)
 {
     cout << liste->premier->donnee << endl;
-    Liste *iter = nullptr;
+    const Noeud* iter = liste->premier;
     while (iter != nullptr)
     {
-        
+        cout << liste->premier->donnee << endl;
+        iter = iter->suivant;
     }
     
 }
