@@ -1,3 +1,4 @@
+
 #include "tp1.h"
 #include <QApplication>
 #include <time.h>
@@ -12,6 +13,21 @@ int search(int value, Array& toSort, int size)
     // your code
     // check the last cell and if it does not correspond
     // then consider a smaller array when recalling search
+        if(size <= 0){
+             return_and_display(-1);
+        }else if(toSort[size-1] == value){
+
+             return_and_display(size-1);
+
+        }else {
+             return_and_display(search(value, toSort, size - 1));
+        }
+
+
+
+
+
+
 }
 
 int main(int argc, char *argv[])

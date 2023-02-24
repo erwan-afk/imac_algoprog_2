@@ -7,10 +7,15 @@
 void allEvens(Array& evens, Array& array, int evenSize, int arraySize)
 {
     Context _("allEvens", evenSize, arraySize); // do not care about this, it allow the display of call stack
+        if(arraySize==0){
+            return;
+        }else if(array[arraySize-1]%2 == 0){
+            evens[evenSize]= array[arraySize-1];
+            allEvens(evens, array, evenSize+1, arraySize-1);
+        }else {
+            allEvens(evens, array, evenSize, arraySize-1);
+        }
 
-    // your code
-
-    return;
 }
 
 int main(int argc, char *argv[])
