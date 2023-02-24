@@ -13,6 +13,7 @@ TEMPLATE = app
 CONFIG += c++11
 
 SOURCES += \
+	../lib/utils.cpp \
 		exo0.cpp \
 		../lib/mainwindow.cpp \
 		../lib/thread.cpp \
@@ -23,6 +24,7 @@ HEADERS += \
 		../lib/mainwindow.h \
 		../lib/thread.h \
 		../lib/array.h \
-		../lib/tp1.h \
+		../lib/tp1.h \ \
+	../lib/utils.h
 
 INCLUDEPATH += ../lib
