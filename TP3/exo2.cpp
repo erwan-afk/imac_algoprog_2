@@ -12,11 +12,58 @@ using std::size_t;
  * @param indexMin first index of the value to find
  * @param indexMax last index of the value to find
  */
-void binarySearchAll(Array& array, int toSearch, int& indexMin, int& indexMax)
+void binarySearchAll(Array array, int toSearch, int& indexMin, int& indexMax)
 {
-	// do not use increments, use two different binary search loop
-    indexMin = indexMax = -1;
+    indexMin = -1;
+    indexMax = -1;
+
+    int start = 0;
+    int end = array.size() - 1;
+
+    // Recherche de l'index minimum
+    while (start <= end)
+    {
+        int mid = (start + end) / 2;
+
+        if (array[mid] < toSearch)
+        {
+            start = mid + 1;
+        }
+        else if (array[mid] >= toSearch)
+        {
+            indexMin = mid;
+            end = mid - 1;
+        }
+    }
+
+    // Réinitialisation des variables
+    start = 0;
+    end = array.size() - 1;
+
+    // Recherche de l'index maximum
+    while (start <= end)
+    {
+        int mid = (start + end) / 2;
+
+        if (array[mid] <= toSearch)
+        {
+            indexMax = mid;
+            start = mid + 1;
+        }
+        else
+        {
+            end = mid - 1;
+        }
+    }
+
+    // Si l'élément n'est pas dans le tableau, on réinitialise les index
+    if (indexMin == -1 || indexMax == -1)
+    {
+        indexMin = -1;
+        indexMax = -1;
+    }
 }
+
 
 int main(int argc, char *argv[])
 {

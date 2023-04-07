@@ -57,8 +57,11 @@ void processCharFrequences(string data, Array& frequences)
       * is the frequence of the caracter with ASCII code i
      **/
 
-    // Your code
-    frequences.fill(0);
+    int dataSize = data.size();
+        for(int i = 0; i < dataSize; i++){
+            int asciiCode = (int)data[i];
+            frequences[asciiCode] += 1;
+        }
 }
 
 void HuffmanHeap::insertHeapNode(int heapSize, HuffmanNode* newNode)
@@ -74,8 +77,15 @@ void HuffmanHeap::insertHeapNode(int heapSize, HuffmanNode* newNode)
 
     // Your code
     int i = heapSize;
+    this->set(i, newNode);
+
+        while (i > 0 && this->get(i)->frequences < this->get((i-1)/2)->frequences) {
+            this->swap(i, (i-1)/2);
+            i = (i-1)/2;
+        }
 
 }
+
 
 void buildHuffmanHeap(const Array& frequences, HuffmanHeap& priorityMinHeap, int& heapSize)
 {
@@ -88,6 +98,14 @@ void buildHuffmanHeap(const Array& frequences, HuffmanHeap& priorityMinHeap, int
     // Your code
     heapSize = 0;
 
+        for (int i = 0; i < frequences.size(); i++) {
+            if (frequences[i] > 0) {
+                HuffmanNode* node = new HuffmanNode(i, frequences[i]);
+                priorityMinHeap.insertHeapNode(heapSize, node);
+                heapSize++;
+            }
+        }
+
 }
 
 void HuffmanHeap::heapify(int heapSize, int nodeIndex)
@@ -98,7 +116,22 @@ void HuffmanHeap::heapify(int heapSize, int nodeIndex)
       * this->get(i): HuffmanNode*  <-> this->get(i)->frequences
       * you can use `this->swap(firstIndex, secondIndex)`
      **/
-    // Your code
+    int smallest = nodeIndex;
+    int leftChild = 2 * nodeIndex + 1;
+    int rightChild = 2 * nodeIndex + 2;
+
+    if (leftChild < heapSize && this->get(leftChild)->frequences < this->get(smallest)->frequences) {
+        smallest = leftChild;
+    }
+
+    if (rightChild < heapSize && this->get(rightChild)->frequences < this->get(smallest)->frequences) {
+        smallest = rightChild;
+    }
+
+    if (smallest != nodeIndex) {
+        this->swap(nodeIndex, smallest);
+        heapify(heapSize, smallest);
+    }
 
 }
 
@@ -111,7 +144,25 @@ HuffmanNode* HuffmanHeap::extractMinNode(int heapSize)
       * you can use `this->swap`
      **/
 
-    // Your code
+    // Si le tas est vide, renvoyer un pointeur nul
+        if (heapSize == 0) {
+            return nullptr;
+        }
+
+        // Stocker la valeur minimale (la tête)
+        HuffmanNode* minNode = get(0);
+
+        // Remplacer la tête par le dernier nœud
+        swap(0, heapSize - 1);
+
+        // Décrémenter la taille du tas
+        heapSize--;
+
+        // Réparer le tas depuis la racine (index 0)
+        heapify(heapSize, 0);
+
+        // Retourner la valeur minimale extraite
+        return minNode;
 }
 
 HuffmanNode* makeHuffmanSubTree(HuffmanNode* rightNode, HuffmanNode* leftNode)
@@ -122,8 +173,15 @@ HuffmanNode* makeHuffmanSubTree(HuffmanNode* rightNode, HuffmanNode* leftNode)
      * and frequence is the sum of the 2 children frequences
      * Return the new HuffmanNode* parent
      **/
-    // Your code
-    return new HuffmanNode('\0');
+    // Create a new parent node with '\0' as character and sum of the children frequencies as frequency
+        int parentFreq = rightNode->frequences + leftNode->frequences;
+        HuffmanNode* parentNode = new HuffmanNode('\0', parentFreq);
+
+        // Set the children of the parent node
+        parentNode->left = leftNode;
+        parentNode->right = rightNode;
+
+        return parentNode;
 }
 
 HuffmanNode* buildHuffmanTree(HuffmanHeap& priorityMinHeap, int heapSize)
@@ -135,8 +193,20 @@ HuffmanNode* buildHuffmanTree(HuffmanHeap& priorityMinHeap, int heapSize)
       * use extractMinNode()
      **/
 
-    // Your code
-    return new HuffmanNode('?');
+    // build Huffman tree by taking nodes from the priority min-heap
+    while (heapSize > 1) {
+        // extract two minimum nodes from the heap
+        HuffmanNode* leftNode = priorityMinHeap.extractMinNode(heapSize--);
+        HuffmanNode* rightNode = priorityMinHeap.extractMinNode(heapSize--);
+
+        // make a subtree with the two nodes and add it to the heap
+        HuffmanNode* parent = makeHuffmanSubTree(rightNode, leftNode);
+        parent->frequences = leftNode->frequences + rightNode->frequences;
+        priorityMinHeap.insertHeapNode(heapSize++, parent);
+    }
+
+    // the last node of the heap is the Huffman tree
+    return priorityMinHeap.extractMinNode(heapSize);
 }
 
 void HuffmanNode::processCodes(const std::string& baseCode)
@@ -149,7 +219,23 @@ void HuffmanNode::processCodes(const std::string& baseCode)
       * If the node is a leaf, it takes the baseCode.
      **/
 
-    // Your code
+    // If the current node is a leaf, set its code to the baseCode
+        if (isLeaf()) {
+            code = baseCode;
+            return;
+        }
+
+        // Traverse the left child and append '0' to the baseCode
+        if (left) {
+            std::string newBaseCode = baseCode + '0';
+            left->processCodes(newBaseCode);
+        }
+
+        // Traverse the right child and append '1' to the baseCode
+        if (right) {
+            std::string newBaseCode = baseCode + '1';
+            right->processCodes(newBaseCode);
+        }
 }
 
 void HuffmanNode::fillCharactersArray(std::string charactersCodes[])
@@ -181,20 +267,35 @@ string huffmanEncode(const string& toEncode, HuffmanNode* huffmanTree)
     huffmanTree->fillCharactersArray(charactersCodes);
     string encoded = "";
 
+    for (char c : toEncode) {
+           encoded += charactersCodes[(unsigned char) c];
+    }
+
     return encoded;
 }
 
 
 string huffmanDecode(const string& toDecode, const HuffmanNode& huffmanTreeRoot)
 {
-    /**
-      * Use each caracters of toDecode, which is '0' either '1',
-      * to travel the Huffman tree. Each time you get a leaf, get
-      * the decoded character of this node.
-     **/
-    // Your code
-    string decoded = "";
 
+    string decoded = "";
+    HuffmanNode* currentNode = const_cast<HuffmanNode*>(&huffmanTreeRoot);
+
+    for (char c : toDecode) {
+        if (c == '0') {
+
+            currentNode = static_cast<HuffmanNode*>(currentNode->get_left_child());
+        }
+        else if (c == '1') {
+
+            currentNode = static_cast<HuffmanNode*>(currentNode->get_right_child());
+        }
+
+        if (currentNode->isLeaf()) {
+            decoded += currentNode->character;
+            currentNode = const_cast<HuffmanNode*>(&huffmanTreeRoot);
+        }
+    }
     return decoded;
 }
 

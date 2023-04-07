@@ -16,51 +16,116 @@ struct SearchTreeNode : public Node
 
     void initNode(int value)
     {
-        // init initial node without children
+        this->value = value;
+        this->left = NULL;
+        this->right = NULL;
     }
 
 	void insertNumber(int value) {
         // create a new node and insert it in right or left child
+
+        if (value < this->value) {
+                if (left == NULL) {
+                    left = new SearchTreeNode(value);
+                    left->initNode(value);
+                } else {
+                    left->insertNumber(value);
+                }
+            } else if (value > this->value) {
+                if (right == NULL) {
+                    right = new SearchTreeNode(value);
+                    right->initNode(value);
+                } else {
+                    right->insertNumber(value);
+                }
+            }
     }
 
 	uint height() const	{
-        // should return the maximum height between left child and
-        // right child +1 for itself. If there is no child, return
-        // just 1
-        return 1;
+        uint leftHeight = 0, rightHeight = 0;
+            if (left != NULL) {
+                leftHeight = left->height();
+            }
+            if (right != NULL) {
+                rightHeight = right->height();
+            }
+            return std::max(leftHeight, rightHeight) + 1;
     }
 
 	uint nodesCount() const {
-        // should return the sum of nodes within left child and
-        // right child +1 for itself. If there is no child, return
-        // just 1
-        return 1;
+        uint leftCount = 0, rightCount = 0;
+                if (left != NULL) {
+                    leftCount = left->nodesCount();
+                }
+                if (right != NULL) {
+                    rightCount = right->nodesCount();
+                }
+                return leftCount + rightCount + 1;
 	}
 
 	bool isLeaf() const {
         // return True if the node is a leaf (it has no children)
-        return false;
+        return (left == NULL) && (right == NULL);
+
 	}
 
 	void allLeaves(Node* leaves[], uint& leavesCount) {
         // fill leaves array with all leaves of this tree
+        if (isLeaf()) {
+                    leaves[leavesCount++] = this;
+                } else {
+                    if (left != NULL) {
+                        left->allLeaves(leaves, leavesCount);
+                    }
+                    if (right != NULL) {
+                        right->allLeaves(leaves, leavesCount);
+                    }
+                }
 	}
 
 	void inorderTravel(Node* nodes[], uint& nodesCount) {
         // fill nodes array with all nodes with inorder travel
+        if (left != NULL) {
+                    left->inorderTravel(nodes, nodesCount);
+                }
+                nodes[nodesCount++] = this;
+                if (right != NULL) {
+                    right->inorderTravel(nodes, nodesCount);
+                }
 	}
 
 	void preorderTravel(Node* nodes[], uint& nodesCount) {
         // fill nodes array with all nodes with preorder travel
+        nodes[nodesCount++] = this;
+                if (left != NULL) {
+                    left->preorderTravel(nodes, nodesCount);
+                }
+                if (right != NULL) {
+                    right->preorderTravel(nodes, nodesCount);
+                }
 	}
 
 	void postorderTravel(Node* nodes[], uint& nodesCount) {
         // fill nodes array with all nodes with postorder travel
+        if (left != NULL) {
+                    left->postorderTravel(nodes, nodesCount);
+                }
+                if (right != NULL) {
+                    right->postorderTravel(nodes, nodesCount);
+                }
+                nodes[nodesCount++] = this;
 	}
 
 	Node* find(int value) {
         // find the node containing value
-		return nullptr;
+        if (this->value == value) {
+                    return this;
+                } else if (value < this->value && left != NULL) {
+                    return left->find(value);
+                } else if (right != NULL) {
+                    return right->find(value);
+                }
+                return NULL;
 	}
 
     void reset()
