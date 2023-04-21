@@ -2,6 +2,7 @@
 #include <QString>
 #include <time.h>
 #include <stdio.h>
+#include <iostream>
 #include <string>
 
 #include <tp5.h>
@@ -22,8 +23,12 @@ std::vector<string> TP5::names(
 
 unsigned long int hash(string key)
 {
-    // return an unique hash id from key
-    return 0;
+    unsigned long int value = 0;
+    for (int i = 1; i < key.size(); i++) {
+        value += (int)key[i] * pow(128, key.size() - 1 - i);
+    }
+
+    return value;
 }
 
 struct MapNode : public BinaryTree
@@ -52,7 +57,19 @@ struct MapNode : public BinaryTree
      */
     void insertNode(MapNode* node)
     {
-
+        if(node->key_hash < this->key_hash) {
+            if(this->left) {
+                this->left->insertNode(node);
+            } else {
+                this->left = node;
+            }
+        } else if(node->key_hash >= this->key_hash) {
+            if(this->right) {
+                this->right->insertNode(node);
+            } else {
+                this->right = node;
+            }
+        }
     }
 
     void insertNode(string key, int value)
@@ -79,7 +96,12 @@ struct Map
      */
     void insert(string key, int value)
     {
-
+        MapNode* newNode = new MapNode(key, value);
+        if (root == nullptr) {
+            root = newNode;
+        } else {
+            root->insertNode(newNode);
+        }
     }
 
     /**
@@ -89,7 +111,17 @@ struct Map
      */
     int get(string key)
     {
-        return -1;
+        MapNode* currentRoot = root;
+
+        while (currentRoot && currentRoot->key != key) {
+            if (hash(key) <= currentRoot->key_hash) {
+                currentRoot = currentRoot->left;
+            } else {
+                currentRoot = currentRoot->right;
+            }
+        }
+
+        return (currentRoot && currentRoot->value) ? currentRoot->value : -1;
     }
 
     MapNode* root;
@@ -99,7 +131,8 @@ struct Map
 int main(int argc, char *argv[])
 {
     srand(time(NULL));
-	Map map;
+    Map map;
+    std::vector<std::string> inserted;
 
     map.insert("Yolo", 20);
     for (std::string& name : TP5::names)
@@ -107,6 +140,7 @@ int main(int argc, char *argv[])
         if (rand() % 3 == 0)
         {
             map.insert(name, rand() % 21);
+            inserted.push_back(name);
         }
     }
 
@@ -117,6 +151,12 @@ int main(int argc, char *argv[])
     printf("map[\"Yolo\"]=%d\n", map.get("Yolo"));
     printf("map[\"Tanguy\"]=%d\n", map.get("Tanguy"));
 
+    printf("\n");
+    for (size_t i=0; i<inserted.size()/2; i++)
+        printf("map[\"%s\"]=%d\n", inserted[i].c_str(), map.get(inserted[i]));
+
+
+    std::cout.flush();
 
     QApplication a(argc, argv);
     MainWindow::instruction_duration = 200;
