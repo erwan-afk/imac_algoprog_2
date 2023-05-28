@@ -6,113 +6,115 @@ MainWindow* w = nullptr;
 
 void Graph::buildFromAdjenciesMatrix(int **adjacencies, int nodeCount)
 {
-	/**
-	  * Make a graph from a matrix
-	  * first create all nodes, add it to the graph then connect them
-	  * this->appendNewNode
-	  * this->nodes[i]->appendNewEdge
-	  */
+    for (int nodeIndex = 0; nodeIndex < nodeCount; nodeIndex++) {
+        GraphNode* node = new GraphNode(nodeIndex);
+        this->appendNewNode(node);
+    }
 
-    for (int i = 0; i < nodeCount; i++) {
-            // Create a new GraphNode with the value of i
-            GraphNode* newNode = new GraphNode(i);
-            // Add the new node to the graph
-            this->appendNewNode(newNode);
-            for (int j = 0; j < nodeCount; j++) {
-                if (adjacencies[i][j] != 0) {
-                    // Add a new edge to the node for each non-zero element in the row
-                    this->nodes[i]->appendNewEdge(this->nodes[j], adjacencies[i][j]);
-                }
+    for (int sourceIndex = 0; sourceIndex < nodeCount; sourceIndex++) {
+        for (int destinationIndex = 0; destinationIndex < nodeCount; destinationIndex++) {
+            if (adjacencies[sourceIndex][destinationIndex] != 0) {
+                GraphNode* sourceNode = nodes[sourceIndex];
+                GraphNode* destinationNode = nodes[destinationIndex];
+                sourceNode->appendNewEdge(destinationNode);
             }
         }
+    }
 }
 
 void Graph::deepTravel(GraphNode *first, GraphNode *nodes[], int &nodesSize, bool visited[])
 {
-	/**
-	  * Fill nodes array by travelling graph starting from first and using recursivity
-	  */
-        visited[first->value] = true;
-        nodes[nodesSize++] = first;
+     // Marquer le nœud actuel comme visité
+    visited[first->value] = true;
+    nodes[nodesSize++] = first;
 
-        Edge* edge = first->edges;
-           while (edge != nullptr) {
-               GraphNode* destination = edge->destination;
-               if (!visited[destination->value]) {
-                   deepTravel(destination, nodes, nodesSize, visited);
-               }
-               edge = edge->next;
-           }
+    Edge* edge = first->edges;
+    while (edge != nullptr) {
+        GraphNode* destination = edge->destination;
+        if (!visited[destination->value]) {
+            deepTravel(destination, nodes, nodesSize, visited);
+        }
+        edge = edge->next;
+    }
 
 
 }
 
 void Graph::wideTravel(GraphNode *first, GraphNode *nodes[], int &nodesSize, bool visited[])
 {
-	/**
-	 * Fill nodes array by travelling graph starting from first and using queue
-	 * nodeQueue.push(a_node)
-	 * nodeQueue.front() -> first node of the queue
-	 * nodeQueue.pop() -> remove first node of the queue
-	 * nodeQueue.size() -> size of the queue
-	 */
-        std::queue<GraphNode*> nodeQueue;
-        nodeQueue.push(first);
+    /**
+     * Fill nodes array by travelling graph starting from first and using queue
+     * nodeQueue.push(a_node)
+     * nodeQueue.front() -> first node of the queue
+     * nodeQueue.pop() -> remove first node of the queue
+     * nodeQueue.size() -> size of the queue
+     */
 
-        while (!nodeQueue.empty()) {
-            GraphNode *current = nodeQueue.front();
-            nodeQueue.pop();
-            visited[current->value] = true;
-            nodes[nodesSize++] = current;
-            Edge* currentEdge = first->edges;
+        // Créer une file d'attente (queue) pour stocker les nœuds à visiter
+    std::queue<GraphNode*> nodeQueue;
 
-            while (currentEdge != nullptr)
-                    {
-                        GraphNode* adjacentNode = currentEdge->destination;
-                        if (!visited[adjacentNode->value])
-                        {
-                            visited[adjacentNode->value] = true;
-                            nodeQueue.push(adjacentNode);
-                        }
-                        currentEdge = currentEdge->next;
-                    }
+    // Marquer le nœud initial comme visité et l'ajouter à la liste des nœuds
+    visited[first->value] = true;
+    nodes[nodesSize++] = first;
 
+    // Enfiler le nœud initial dans la file d'attente
+    nodeQueue.push(first);
+
+    // Parcourir la file d'attente jusqu'à ce qu'elle soit vide
+    while (!nodeQueue.empty()) {
+        // Récupérer le premier nœud de la file d'attente
+        GraphNode* current = nodeQueue.front();
+        nodeQueue.pop();
+
+        // Parcourir les arêtes du nœud actuel
+        Edge* edge = current->edges;
+        while (edge != nullptr) {
+            GraphNode* destination = edge->destination;
+            if (!visited[destination->value]) {
+                // Marquer le nœud de destination comme visité
+                visited[destination->value] = true;
+
+                // Ajouter le nœud de destination à la liste des nœuds
+                nodes[nodesSize++] = destination;
+
+                // Enfiler le nœud de destination dans la file d'attente
+                nodeQueue.push(destination);
+            }
+            edge = edge->next;
         }
+    }
+
 }
 
 bool Graph::detectCycle(GraphNode *first, bool visited[])
 {
-	/**
-	  Detect if there is cycle when starting from first
-	  (the first may not be in the cycle)
-	  Think about what's happen when you get an already visited node
-	**/
     visited[first->value] = true;
-    Edge* currentEdge = first->edges;
-    while (currentEdge != nullptr) {
-        if (visited[currentEdge->destination->value]) {
-            return true;
-        }
 
-        if (!visited[currentEdge->destination->value] && detectCycle(currentEdge->destination, visited)) {
+    Edge* edge = first->edges;
+    while (edge != nullptr) {
+        GraphNode* destination = edge->destination;
+        if (visited[destination->value]) {
+            // Le nœud de destination a déjà été visité, donc il y a un cycle
             return true;
+        } else {
+            if (detectCycle(destination, visited)) {
+                // Un cycle a été détecté dans le sous-graphe à partir de la destination
+                return true;
+            }
         }
-
-        currentEdge = currentEdge->next;
+        edge = edge->next;
     }
 
-    visited[first->value] = false;
+    // Aucun cycle détecté à partir de ce nœud
     return false;
-
-
 }
 
 int main(int argc, char *argv[])
 {
-	QApplication a(argc, argv);
-	MainWindow::instruction_duration = 150;
-	w = new GraphWindow();
-	w->show();
+    QApplication a(argc, argv);
+    MainWindow::instruction_duration = 150;
+    w = new GraphWindow();
+    w->show();
 
-	return a.exec();
+    return a.exec();
 }
